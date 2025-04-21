@@ -1,0 +1,18 @@
+13:02:09.624 | [36mINFO[0m    | Task run 'preprocess_task-25d' - Finished in state [32mCompleted[0m()
+Epoch 1/5:
+Train Loss: 31285.895158, Val Loss: 1623228.375000, MAE: 39369.32
+Model saved with Val Loss: 1623228.3750
+Epoch 2/5:
+Train Loss: 336.918095, Val Loss: 101065.898438, MAE: 9198.88
+Model saved with Val Loss: 101065.8984
+Epoch 3/5:
+Train Loss: 80.306353, Val Loss: 9500.089518, MAE: 2774.36
+Model saved with Val Loss: 9500.0895
+Epoch 4/5:
+Train Loss: 41.044643, Val Loss: 1275.950399, MAE: 987.63
+Model saved with Val Loss: 1275.9504
+Epoch 5/5:
+Train Loss: 29.183955, Val Loss: 259.089945, MAE: 437.33
+Model saved with Val Loss: 259.0899
+13:11:07.642 | [36mINFO[0m    | Task run 'train_task-eb3' - Finished in state [32mCompleted[0m()
+13:11:08.822 | [36mINFO[0m    | Task run 'error_analyze-815' - Finished in state [32mCompleted[0m()

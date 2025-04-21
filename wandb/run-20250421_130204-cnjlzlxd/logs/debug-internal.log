@@ -1,0 +1,16 @@
+{"time":"2025-04-21T13:02:04.3205164+03:00","level":"INFO","msg":"stream: starting","core version":"0.19.9","symlink path":"C:\\Users\\maorb\\Classes\\DL\\Counting_cells\\wandb\\run-20250421_130204-cnjlzlxd\\logs\\debug-core.log"}
+{"time":"2025-04-21T13:02:04.6659027+03:00","level":"INFO","msg":"created new stream","id":"cnjlzlxd"}
+{"time":"2025-04-21T13:02:04.6659027+03:00","level":"INFO","msg":"stream: started","id":"cnjlzlxd"}
+{"time":"2025-04-21T13:02:04.6659027+03:00","level":"INFO","msg":"handler: started","stream_id":"cnjlzlxd"}
+{"time":"2025-04-21T13:02:04.6659027+03:00","level":"INFO","msg":"sender: started","stream_id":"cnjlzlxd"}
+{"time":"2025-04-21T13:02:04.666418+03:00","level":"INFO","msg":"writer: Do: started","stream_id":"cnjlzlxd"}
+{"time":"2025-04-21T13:02:04.8993209+03:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-04-21T13:11:08.8321839+03:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-04-21T13:11:08.8332097+03:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-04-21T13:11:09.8450004+03:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading config.yaml","runtime_seconds":0.4462283,"progress":"817B/817B"}],"total_operations":1}}
+{"time":"2025-04-21T13:11:10.1167713+03:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-04-21T13:11:10.3596188+03:00","level":"INFO","msg":"stream: closing","id":"cnjlzlxd"}
+{"time":"2025-04-21T13:11:10.3596188+03:00","level":"INFO","msg":"handler: closed","stream_id":"cnjlzlxd"}
+{"time":"2025-04-21T13:11:10.3605987+03:00","level":"INFO","msg":"sender: closed","stream_id":"cnjlzlxd"}
+{"time":"2025-04-21T13:11:10.3602342+03:00","level":"INFO","msg":"writer: Close: closed","stream_id":"cnjlzlxd"}
+{"time":"2025-04-21T13:11:10.3611034+03:00","level":"INFO","msg":"stream: closed","id":"cnjlzlxd"}

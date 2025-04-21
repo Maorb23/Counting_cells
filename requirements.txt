@@ -1,0 +1,10 @@
+torch
+torchvision
+opencv-python
+numpy
+scipy
+Pillow
+matplotlib
+segmentation-models-pytorch
+wandb
+prefect

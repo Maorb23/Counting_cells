@@ -1,0 +1,40 @@
+{
+  "os": "Windows-11-10.0.26100-SP0",
+  "python": "CPython 3.12.8",
+  "startedAt": "2025-04-21T09:58:05.566460Z",
+  "args": [
+    "--smp",
+    "--summary",
+    "--preprocess",
+    "--train",
+    "--error_analysis",
+    "--num_epochs",
+    "5"
+  ],
+  "program": "C:\\Users\\maorb\\Classes\\DL\\Counting_cells\\cells_wandb.py",
+  "codePath": "cells_wandb.py",
+  "git": {
+    "remote": "https://github.com/Maorb23/Counting_cells",
+    "commit": "4f18d16accf985dd5d4ca62d5c4330e669d0644c"
+  },
+  "email": "maorblumberg@gmail.com",
+  "root": "C:\\Users\\maorb\\Classes\\DL\\Counting_cells",
+  "host": "Maor_Laptop",
+  "executable": "C:\\Users\\maorb\\Classes\\Compugen\\venvc\\Scripts\\python.exe",
+  "codePathLocal": "cells_wandb.py",
+  "cpu_count": 12,
+  "cpu_count_logical": 16,
+  "disk": {
+    "/": {
+      "total": "488543088640",
+      "used": "420283162624"
+    }
+  },
+  "memory": {
+    "total": "16849256448"
+  },
+  "cpu": {
+    "count": 12,
+    "countLogical": 16
+  }
+}
