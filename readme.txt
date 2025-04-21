@@ -1,6 +1,6 @@
 
 
-# 🧬 Cell Counting with U-Net and EfficientNet
+#🧬 Cell Counting with U-Net and EfficientNet
 
 This repository provides a modular pipeline for training deep learning models to perform **cell counting** from microscopy images using **density maps**. The setup includes:
 
@@ -10,7 +10,7 @@ This repository provides a modular pipeline for training deep learning models to
 
 ---
 
-## 📂 Structure
+##📂 Structure
 
 - `preprocess_cells.py` — Handles dataset preparation, including image loading, dot mask conversion to density maps, and custom augmentations like quarter shuffling.
 - `train_cells.py` — Defines the models (manual U-Net and EfficientNet-based U-Net), training loop, and custom loss function.
