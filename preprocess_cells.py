@@ -189,6 +189,7 @@ class CellCountingDataset(Dataset):
         fig.savefig(f"sample.png")
         plt.tight_layout()
         plt.show()
+        return fig
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Cell Counting Dataset')

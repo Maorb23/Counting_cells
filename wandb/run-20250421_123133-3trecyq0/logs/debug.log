@@ -1,0 +1,15 @@
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_setup.py:_flush():67] Current SDK version is 0.19.9
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_setup.py:_flush():67] Configure stats pid to 34036
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_setup.py:_flush():67] Loading settings from C:\Users\maorb\.config\wandb\settings
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_setup.py:_flush():67] Loading settings from C:\Users\maorb\Classes\DL\Counting_cells\wandb\settings
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_setup.py:_flush():67] Loading settings from environment variables
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_init.py:setup_run_log_directory():662] Logging user logs to C:\Users\maorb\Classes\DL\Counting_cells\wandb\run-20250421_123133-3trecyq0\logs\debug.log
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_init.py:setup_run_log_directory():663] Logging internal logs to C:\Users\maorb\Classes\DL\Counting_cells\wandb\run-20250421_123133-3trecyq0\logs\debug-internal.log
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_init.py:init():781] calling init triggers
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_init.py:init():786] wandb.init called with sweep_config: {}
+config: {'_wandb': {}}
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_init.py:init():809] starting backend
+2025-04-21 12:31:33,744 INFO    MainThread:34036 [wandb_init.py:init():813] sending inform_init request
+2025-04-21 12:31:33,851 INFO    MainThread:34036 [wandb_init.py:init():823] backend started and connected
+2025-04-21 12:31:33,859 INFO    MainThread:34036 [wandb_init.py:init():915] updated telemetry
+2025-04-21 12:31:33,906 INFO    MainThread:34036 [wandb_init.py:init():939] communicating run to backend with 90.0 second timeout

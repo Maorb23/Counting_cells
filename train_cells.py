@@ -179,6 +179,7 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
     best_val_loss = float('inf')
     train_losses = []
     val_losses = []
+    mae_list = []
 
     for epoch in range(num_epochs):
         # Training phase
@@ -244,6 +245,7 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
         avg_val_loss = val_loss / len(val_loader)
         val_losses.append(avg_val_loss)
         avg_mae = mae / len(val_loader.dataset)
+        mae_list.append(avg_mae)
         print(f'Epoch {epoch+1}/{num_epochs}:')
         print(f'Train Loss: {avg_train_loss:.6f}, Val Loss: {avg_val_loss:.6f}, MAE: {avg_mae:.2f}')
 
@@ -253,7 +255,7 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
             torch.save(model.state_dict(), 'best_unet_cell_counter.pth')
             print(f'Model saved with Val Loss: {best_val_loss:.4f}')
 
-    return train_losses, val_losses
+    return train_losses, val_losses, mae_list
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train UNet for Cell Counting')
@@ -284,7 +286,7 @@ if __name__ == '__main__':
 
 
 
-    train_losses, val_losses = train_unet(
+    train_losses, val_losses, mae_list = train_unet(
         model=model,
         train_loader=train_loader,
         val_loader=val_loader,

@@ -1,0 +1,125 @@
+12:32:59.897 | [38;5;160mERROR[0m   | Task run 'preprocess_task-225' - Task run failed with exception: AttributeError("'NoneType' object has no attribute 'ndim'") - Retries are exhausted
+Traceback (most recent call last):
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 819, in run_context
+    yield self
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 1395, in run_task_sync
+    engine.call_task_fn(txn)
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 836, in call_task_fn
+    result = call_with_parameters(self.task.fn, parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\utilities\callables.py", line 210, in call_with_parameters
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\DL\Counting_cells\cells_wandb.py", line 42, in preprocess_task
+    wandb.log({"Sample Image": wandb.Image(fig)})
+                               ^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\wandb\sdk\data_types\image.py", line 178, in __init__
+    self._initialize_from_data(data_or_path, mode, file_type)
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\wandb\sdk\data_types\image.py", line 328, in _initialize_from_data
+    if data.ndim > 2:
+       ^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndim'
+12:32:59.913 | [38;5;160mERROR[0m   | Task run 'preprocess_task-225' - Finished in state [38;5;160mFailed[0m("Task run encountered an exception AttributeError: 'NoneType' object has no attribute 'ndim'")
+12:32:59.920 | [38;5;160mERROR[0m   | Flow run[35m 'precise-buffalo'[0m - Encountered exception during execution: AttributeError("'NoneType' object has no attribute 'ndim'")
+Traceback (most recent call last):
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 763, in run_context
+    yield self
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 1370, in run_flow_sync
+    engine.call_flow_fn()
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 783, in call_flow_fn
+    result = call_with_parameters(self.flow.fn, self.parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\utilities\callables.py", line 210, in call_with_parameters
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\DL\Counting_cells\cells_wandb.py", line 126, in main_flow
+    train_loader, val_loader = preprocess_task(train_images, train_labels, val_images, val_labels, batch_size)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\tasks.py", line 1058, in __call__
+    return run_task(
+           ^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 1610, in run_task
+    return run_task_sync(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 1397, in run_task_sync
+    return engine.state if return_type == "state" else engine.result()
+                                                       ^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 490, in result
+    raise self._raised
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 819, in run_context
+    yield self
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 1395, in run_task_sync
+    engine.call_task_fn(txn)
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 836, in call_task_fn
+    result = call_with_parameters(self.task.fn, parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\utilities\callables.py", line 210, in call_with_parameters
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\DL\Counting_cells\cells_wandb.py", line 42, in preprocess_task
+    wandb.log({"Sample Image": wandb.Image(fig)})
+                               ^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\wandb\sdk\data_types\image.py", line 178, in __init__
+    self._initialize_from_data(data_or_path, mode, file_type)
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\wandb\sdk\data_types\image.py", line 328, in _initialize_from_data
+    if data.ndim > 2:
+       ^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndim'
+12:33:00.207 | [36mINFO[0m    | Flow run[35m 'precise-buffalo'[0m - Finished in state [38;5;160mFailed[0m("Flow run encountered an exception: AttributeError: 'NoneType' object has no attribute 'ndim'")
+Traceback (most recent call last):
+  File "C:\Users\maorb\Classes\DL\Counting_cells\cells_wandb.py", line 160, in <module>
+    main_flow(
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flows.py", line 1675, in __call__
+    return run_flow(
+           ^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 1527, in run_flow
+    ret_val = run_flow_sync(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 1372, in run_flow_sync
+    return engine.state if return_type == "state" else engine.result()
+                                                       ^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 350, in result
+    raise self._raised
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 763, in run_context
+    yield self
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 1370, in run_flow_sync
+    engine.call_flow_fn()
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\flow_engine.py", line 783, in call_flow_fn
+    result = call_with_parameters(self.flow.fn, self.parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\utilities\callables.py", line 210, in call_with_parameters
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\DL\Counting_cells\cells_wandb.py", line 126, in main_flow
+    train_loader, val_loader = preprocess_task(train_images, train_labels, val_images, val_labels, batch_size)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\tasks.py", line 1058, in __call__
+    return run_task(
+           ^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 1610, in run_task
+    return run_task_sync(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 1397, in run_task_sync
+    return engine.state if return_type == "state" else engine.result()
+                                                       ^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 490, in result
+    raise self._raised
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 819, in run_context
+    yield self
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 1395, in run_task_sync
+    engine.call_task_fn(txn)
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\task_engine.py", line 836, in call_task_fn
+    result = call_with_parameters(self.task.fn, parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\prefect\utilities\callables.py", line 210, in call_with_parameters
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\DL\Counting_cells\cells_wandb.py", line 42, in preprocess_task
+    wandb.log({"Sample Image": wandb.Image(fig)})
+                               ^^^^^^^^^^^^^^^^
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\wandb\sdk\data_types\image.py", line 178, in __init__
+    self._initialize_from_data(data_or_path, mode, file_type)
+  File "C:\Users\maorb\Classes\Compugen\venvc\Lib\site-packages\wandb\sdk\data_types\image.py", line 328, in _initialize_from_data
+    if data.ndim > 2:
+       ^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndim'
