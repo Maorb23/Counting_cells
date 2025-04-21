@@ -9,3 +9,4 @@
 data/train_images/
 data/train_labels/
 sample.png
+*.pth
