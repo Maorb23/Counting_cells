@@ -230,7 +230,7 @@ class CellCountingDataset(Dataset):
         axes[2].set_title(f"Density Map (Sum: {density_np.sum():.1f})")
         axes[2].axis("off")
         fig.colorbar(im, ax=axes[2])
-
+        fig.savefig(f"sample_{idx}.png")
         plt.tight_layout()
         plt.show()
 

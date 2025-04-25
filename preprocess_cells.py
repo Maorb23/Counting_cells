@@ -11,6 +11,16 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 
+import random, numpy as np, torch
+seed = 42
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
+
 class QuarterShuffle:
     def __init__(self, p=0.5):
         self.p = p
@@ -153,7 +163,8 @@ class CellCountingDataset(Dataset):
         return maps.sum(dim=(1, 2, 3))  # Returns [N] count per image
 
     def get_loader(self, batch_size=8, shuffle=True, num_workers=2):
-        return DataLoader(self, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
+        return DataLoader(self, batch_size=batch_size, shuffle=shuffle, pin_memory=True, 
+                          num_workers=num_workers, persistent_workers=True)
 
     def visualize_sample(self, idx):
         """

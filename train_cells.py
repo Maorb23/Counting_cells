@@ -21,6 +21,15 @@ import torch.nn.functional as F
 from preprocess_cells import CellCountingDataset
 import torchvision.models as models
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+seed = 42
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
 def mse_with_count_regularization(pred_map, target_map, alpha=1, beta=0.001):
     pixel_mse = F.mse_loss(pred_map, target_map)
 
@@ -265,19 +274,25 @@ if __name__ == '__main__':
     parser.add_argument('--smp', action='store_true', help='Use segmentation models pytorch')
     parser.add_argument('--summary', action='store_true', help='Print model summary')
     args = parser.parse_args()
+    
+
     train_loader = torch.load(args.train_loader, weights_only=False)
     val_loader = torch.load(args.val_loader, weights_only=False)
 
 
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     if args.manual:
         model = UNetCellCounter().to(device)
     elif args.smp:
         model = UNetCellCounterEffNet(backbone="efficientnet-b4", pretrained=True).to(device)
     else:
         raise ValueError("Please specify a model type")
-
+    print("CUDA available:", torch.cuda.is_available())
+    print("Loading train_loader from:", args.train_loader)
+    print("Model parameters on:", next(model.parameters()).device)
+    x, _, y = next(iter(train_loader))
+    print("Batch x on:", x.device, "y on:", y.device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
     criterion = nn.MSELoss()  # L2 loss for density map regression
     if args.summary:    
