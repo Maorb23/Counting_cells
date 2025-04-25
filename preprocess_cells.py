@@ -216,4 +216,4 @@ if __name__ == '__main__':
     torch.save(train_loader, 'data/processed/train_loader.pth')
     torch.save(val_loader, 'data/processed/val_loader.pth')
     # Visualize a sample from the training dataset
-    train_dataset.visualize_sample(0)
+    train_dataset.visualize_sample(1)
