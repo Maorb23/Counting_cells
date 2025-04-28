@@ -203,6 +203,12 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
 
             # Forward pass
             density_maps, _ = model(inputs)
+            # inside your train loop, after you send targets to device:
+            print("targets min/max/sum:", targets.min().item(), targets.max().item(), targets.sum().item())
+            print("preds   min/max/sum:", density_maps.detach().min().item(),
+                                        density_maps.detach().max().item(),
+                                        density_maps.detach().sum().item())
+
 
             # Calculate loss (L2 / MSE loss)
             loss = criterion(density_maps, targets)

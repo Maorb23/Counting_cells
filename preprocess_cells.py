@@ -59,7 +59,7 @@ class QuarterShuffle:
 
 
 class CellCountingDataset(Dataset):
-    def __init__(self, image_paths, label_paths, mode='train', img_transform=None, gt = False, qt = True):
+    def __init__(self, image_paths, label_paths, mode='train', img_transform=None, gt = False, qt = False):
         self.image_paths = image_paths
         self.label_paths = label_paths
         self.mode = mode  # 'train' or 'val'
@@ -133,6 +133,7 @@ class CellCountingDataset(Dataset):
     def _get_img_transform(self):
         if self.mode == 'train':
             ops = []
+            ops = [transforms.ToTensor()]
             if self.gt:
                 ops.extend([
                     transforms.ColorJitter(...),
