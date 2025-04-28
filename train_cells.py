@@ -204,10 +204,10 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
             # Forward pass
             density_maps, _ = model(inputs)
             # inside your train loop, after you send targets to device:
-            print("targets min/max/sum:", targets.min().item(), targets.max().item(), targets.sum().item())
-            print("preds   min/max/sum:", density_maps.detach().min().item(),
-                                        density_maps.detach().max().item(),
-                                        density_maps.detach().sum().item())
+            #print("targets min/max/sum:", targets.min().item(), targets.max().item(), targets.sum().item())
+            #print("preds   min/max/sum:", density_maps.detach().min().item(),
+             #                           density_maps.detach().max().item(),
+              #                          density_maps.detach().sum().item())
 
 
             # Calculate loss (L2 / MSE loss)
@@ -279,6 +279,7 @@ if __name__ == '__main__':
     parser.add_argument('--manual', action='store_true', help='Manually specify the device')
     parser.add_argument('--smp', action='store_true', help='Use segmentation models pytorch')
     parser.add_argument('--summary', action='store_true', help='Print model summary')
+    parser.add_argument('--epochs', action='store_true', help='Preprocess the data')
     args = parser.parse_args()
     
 
@@ -294,11 +295,7 @@ if __name__ == '__main__':
         model = UNetCellCounterEffNet(backbone="efficientnet-b4", pretrained=True).to(device)
     else:
         raise ValueError("Please specify a model type")
-    print("CUDA available:", torch.cuda.is_available())
-    print("Loading train_loader from:", args.train_loader)
-    print("Model parameters on:", next(model.parameters()).device)
-    x, _, y = next(iter(train_loader))
-    print("Batch x on:", x.device, "y on:", y.device)
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
     criterion = nn.MSELoss()  # L2 loss for density map regression
     if args.summary:    

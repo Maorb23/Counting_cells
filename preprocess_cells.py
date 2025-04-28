@@ -20,17 +20,13 @@ torch.cuda.manual_seed_all(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-
+"""
 class QuarterShuffle:
     def __init__(self, p=0.5):
         self.p = p
 
     def shuffle(self, img):
-        """
-        Shuffle the quarters of the image with probability p.
-        Works on torch.Tensor [C, H, W] or PIL.Image.Image.
-        Returns a torch.Tensor [C, H, W].
-        """
+        
         if random.random() > self.p:
             return TF.to_tensor(img) if isinstance(img, Image.Image) else img
 
@@ -56,10 +52,51 @@ class QuarterShuffle:
         shuffled = torch.cat([top, bottom], dim=1)
 
         return shuffled
+"""
+class QuarterShuffle:
+    def __init__(self, p=0.5):
+        self.p = p
+
+    def shuffle(self, img, idx=None):
+        """
+        Shuffle quarters of the image (optionally using a fixed idx).
+        """
+        if random.random() > self.p and idx is None:
+            if isinstance(img, Image.Image):
+                img = TF.to_tensor(img)
+            return img, [0,1,2,3]  # Always return a tuple (tensor, identity_idx)
+
+
+        if isinstance(img, Image.Image):
+            img = TF.to_tensor(img)
+
+        C, H, W = img.shape
+        h_half, w_half = H // 2, W // 2
+
+        UL = img[:, :h_half, :w_half].clone()
+        UR = img[:, :h_half, w_half:].clone()
+        LL = img[:, h_half:, :w_half].clone()
+        LR = img[:, h_half:, w_half:].clone()
+
+        quarters = [UL, UR, LL, LR]
+
+        if idx is None:
+            if random.random() > self.p:
+                # No shuffle, return identity
+                idx = [0, 1, 2, 3]
+            else:
+                idx = list(range(4))
+                random.shuffle(idx)
+
+        top = torch.cat([quarters[idx[0]], quarters[idx[1]]], dim=2)
+        bottom = torch.cat([quarters[idx[2]], quarters[idx[3]]], dim=2)
+        shuffled = torch.cat([top, bottom], dim=1)
+
+        return shuffled, idx
 
 
 class CellCountingDataset(Dataset):
-    def __init__(self, image_paths, label_paths, mode='train', img_transform=None, gt = False, qt = False):
+    def __init__(self, image_paths, label_paths, mode='train', img_transform=None, gt = False, qt = True):
         self.image_paths = image_paths
         self.label_paths = label_paths
         self.mode = mode  # 'train' or 'val'
@@ -99,9 +136,14 @@ class CellCountingDataset(Dataset):
                 density_map = TF.vflip(density_map)
 
             if self.qt:
+                """
                 shuffler = QuarterShuffle(p=0.5)
                 image = shuffler.shuffle(image)
                 density_map = shuffler.shuffle(density_map)
+                """
+                shuffler = QuarterShuffle(p=0.5)
+                image, idx = shuffler.shuffle(image)
+                density_map, _ = shuffler.shuffle(density_map, idx=idx)
 
 
         # --- Convert ---
@@ -133,11 +175,11 @@ class CellCountingDataset(Dataset):
     def _get_img_transform(self):
         if self.mode == 'train':
             ops = []
-            ops = [transforms.ToTensor()]
+            if not self.qt:
+                ops = [transforms.ToTensor()]
             if self.gt:
                 ops.extend([
-                    transforms.ColorJitter(...),
-                    transforms.RandomApply([...]),
+                    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
                     transforms.RandomAutocontrast(),
                 ])
             ops.append(transforms.Normalize([0.485, 0.456, 0.406],
@@ -164,7 +206,7 @@ class CellCountingDataset(Dataset):
         return maps.sum(dim=(1, 2, 3))  # Returns [N] count per image
 
     def get_loader(self, batch_size=8, shuffle=True, num_workers=2):
-        return DataLoader(self, batch_size=batch_size, shuffle=shuffle, pin_memory=True, 
+        return DataLoader(self, batch_size=batch_size, shuffle=shuffle, pin_memory=True,
                           num_workers=num_workers, persistent_workers=True)
 
     def visualize_sample(self, idx):
@@ -175,7 +217,7 @@ class CellCountingDataset(Dataset):
 
         # Convert image: [3, H, W] → [H, W, 3] and denormalize
         image_np = image.permute(1, 2, 0).cpu().numpy()
-        image_np = np.clip(image_np * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406]), 0, 1)
+        image_np = np.clip(image_np * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406]), 0, 1)    
 
         # Convert dot_mask to NumPy
         dot_mask_np = dot_mask.permute(1, 2, 0).cpu().numpy()
