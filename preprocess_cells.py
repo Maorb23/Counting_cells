@@ -73,6 +73,7 @@ def get_image_label_pairs(images_dir, labels_dir, ext='.png'):
         lbl_path = label_map.get(prefix)
         if lbl_path is None:
             raise FileNotFoundError(f"No label for image {img_path.name}")
+        print(f"[PAIR DEBUG] {img_path.name}  ↔  {lbl_path.name}")
         pairs.append((str(img_path), str(lbl_path)))
 
     return pairs

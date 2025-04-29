@@ -46,8 +46,8 @@ def preprocess_task(train_images: str, train_labels: str, val_images: str, val_l
 
 
 @task
-def train_task(train_loader,val_loader,
-               manual = False, smp = False, num_epochs=30, lr = 1e-4, weight_decay = 1e-5, summary = True):
+def train_task2(train_loader,val_loader,
+               manual = False, smp = False, num_epochs=15, lr = 1e-4, weight_decay = 1e-5, summary = True):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if manual:
@@ -75,18 +75,90 @@ def train_task(train_loader,val_loader,
     )
     return train_losses, val_losses, mae_list
 
+import optuna
+
+@task
+def train_task(train_loader, val_loader,
+               manual=False, smp=False, num_trials=5, num_epochs=15, summary=True):
+    """
+    Train using real Optuna optimization over (lr, weight_decay), saving full loss curves.
+    """
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def objective(trial):
+        # Suggest hyperparameters
+        lr = trial.suggest_float('lr', 1e-5, 1e-3, log=True)
+        weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
+
+        logger.info(f"Optuna Trial {trial.number}: lr={lr:.2e}, weight_decay={weight_decay:.2e}")
+
+        # Model selection
+        if manual:
+            model = UNetCellCounter().to(device)
+        elif smp:
+            model = UNetCellCounterEffNet(backbone="efficientnet-b4", pretrained=True).to(device)
+        else:
+            raise ValueError("Please specify a model type")
+
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+
+        if summary and trial.number == 0:  # Only print summary once
+            from torchsummary import summary
+            summary(model, input_size=(3, 256, 256))
+
+        # ---- Train
+        train_losses, val_losses, mae_list = train_unet(
+            model=model,
+            train_loader=train_loader,
+            val_loader=val_loader,
+            optimizer=optimizer,
+            criterion=mse_with_count_regularization,
+            device=device,
+            num_epochs=num_epochs
+        )
+
+        final_val_loss = val_losses[-1]
+
+        # Attach full loss curves to the trial
+        trial.set_user_attr("train_losses", train_losses)
+        trial.set_user_attr("val_losses", val_losses)
+        trial.set_user_attr("mae_list", mae_list)
+
+        # Optional: Log to wandb
+        wandb.log({
+            f"trial_{trial.number}_lr": lr,
+            f"trial_{trial.number}_weight_decay": weight_decay,
+            f"trial_{trial.number}_final_val_loss": final_val_loss,
+            f"trial_{trial.number}_final_mae": mae_list[-1]
+        })
+
+        return final_val_loss  # What Optuna will minimize
+
+    # --- Create the study
+    study = optuna.create_study(direction="minimize")
+
+    # --- Run optimization
+    study.optimize(objective, n_trials=num_trials)
+
+    logger.info(f"Best trial: {study.best_trial.number} with value {study.best_value}")
+    logger.info(f"Best params: {study.best_trial.params}")
+
+    return study
+
+
 import wandb
 from bokeh.plotting import figure, output_file, save, show
 from bokeh.layouts import column
 
 @task
-def error_analyze(train_losses, val_losses, mae_list, save_path="training_curves.html"):
+def error_analyze(train_losses, val_losses, mae_list, save_path="training_curves.html", idx = 0):
     output_file(save_path)
     
     x = list(range(1, len(train_losses) + 1))
 
     # Loss plot
-    p1 = figure(title="Training vs Validation Loss", x_axis_label='Epoch', y_axis_label='Loss',
+    p1 = figure(title=f"Training vs Validation Loss {idx}", x_axis_label='Epoch', y_axis_label='Loss',
                 width=600, height=300)
     p1.line(x, train_losses, legend_label="Train Loss", line_color="blue", line_width=2)
     p1.line(x, val_losses, legend_label="Val Loss", line_color="green", line_width=2)
@@ -94,7 +166,7 @@ def error_analyze(train_losses, val_losses, mae_list, save_path="training_curves
     p1.legend.click_policy = "hide"
 
     # MAE plot
-    p2 = figure(title="Validation MAE per Epoch", x_axis_label='Epoch', y_axis_label='MAE',
+    p2 = figure(title=f"Validation MAE per Epoch {idx}", x_axis_label='Epoch', y_axis_label='MAE',
                 width=600, height=300)
     p2.line(x, mae_list, legend_label="MAE", line_color="red", line_width=2)
     p2.legend.location = "top_right"
@@ -125,11 +197,34 @@ def main_flow(train_images: str, train_labels: str, val_images: str, val_labels:
     if preprocess:
         train_loader, val_loader = preprocess_task(train_images, train_labels, val_images, val_labels, batch_size)
     
-    if train:
-        train_losses, val_losses, mae_list = train_task(train_loader, val_loader, manual, smp, num_epochs, lr, weight_decay, summary)
+    #if train:
+     #   train_losses, val_losses, mae_list = train_task(train_loader, val_loader, manual, smp, num_epochs, lr, weight_decay, summary)
     
+    #if error_analysis:
+    #    error_analyze(train_losses, val_losses, mae_list)
+    if train:
+        study = train_task(
+            train_loader, val_loader,
+            manual=manual, smp=smp,
+            num_trials=5, num_epochs=15,
+            summary=summary
+        )
+
     if error_analysis:
-        error_analyze(train_losses, val_losses, mae_list)
+        for idx, trial in enumerate(study.trials):
+            # Retrieve saved loss curves
+            train_losses = trial.user_attrs.get("train_losses")
+            val_losses = trial.user_attrs.get("val_losses")
+            mae_list = trial.user_attrs.get("mae_list")
+
+            if train_losses is not None and val_losses is not None and mae_list is not None:
+                error_analyze(
+                    train_losses=train_losses,
+                    val_losses=val_losses,
+                    mae_list=mae_list,
+                    save_path=f"training_curves_trial_{idx}.html",
+                    idx=idx
+                )
 
     
     wandb.finish()
