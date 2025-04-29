@@ -10,6 +10,8 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import argparse
 import os
+from pathlib import Path
+
 
 import random, numpy as np, torch
 seed = 42
@@ -53,6 +55,29 @@ class QuarterShuffle:
 
         return shuffled
 """
+
+
+def get_image_label_pairs(images_dir, labels_dir, ext='.png'):
+    images_dir = Path(images_dir)
+    labels_dir = Path(labels_dir)
+
+    # build a map: prefix → label path, where prefix is e.g. '001'
+    label_map = {
+        p.stem[:3]: p
+        for p in labels_dir.glob(f'*{ext}')
+    }
+
+    pairs = []
+    for img_path in sorted(images_dir.glob(f'*{ext}')):
+        prefix = img_path.stem[:3]        # '001'
+        lbl_path = label_map.get(prefix)
+        if lbl_path is None:
+            raise FileNotFoundError(f"No label for image {img_path.name}")
+        pairs.append((str(img_path), str(lbl_path)))
+
+    return pairs
+
+
 class QuarterShuffle:
     def __init__(self, p=0.5):
         self.p = p
@@ -244,6 +269,11 @@ class CellCountingDataset(Dataset):
         plt.tight_layout()
         plt.show()
         return fig
+    from pathlib import Path
+
+
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Cell Counting Dataset')
@@ -255,11 +285,21 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
+    """
     train_image_paths = [os.path.join(args.train_images, f) for f in os.listdir(args.train_images) if f.endswith('.png')]
     train_label_paths = [os.path.join(args.train_labels, f) for f in os.listdir(args.train_labels) if f.endswith('.png')]
     val_image_paths = [os.path.join(args.val_images, f) for f in os.listdir(args.val_images) if f.endswith('.png')]
     val_label_paths = [os.path.join(args.val_labels, f) for f in os.listdir(args.val_labels) if f.endswith('.png')]
+    """
+    train_pairs = get_image_label_pairs(args.train_images, args.train_labels)
+    val_pairs   = get_image_label_pairs(args.val_images,   args.val_labels)
 
+    # Then, if you need plain strings:
+    train_image_paths = [str(img) for img, _ in train_pairs]
+    train_label_paths = [str(lbl) for _, lbl in train_pairs]
+
+    val_image_paths = [str(img) for img, _ in val_pairs]
+    val_label_paths = [str(lbl) for _, lbl in val_pairs]
 
     train_dataset = CellCountingDataset(train_image_paths, train_label_paths, mode='train')
     val_dataset = CellCountingDataset(val_image_paths, val_label_paths, mode='val')

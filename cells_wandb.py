@@ -105,8 +105,7 @@ def error_analyze(train_losses, val_losses, mae_list, save_path="training_curves
     show(layout)
 
     # 🧠 Log to Weights & Biases
-    with open(save_path, "r") as f:
-        wandb.log({"Training Curves (Bokeh HTML)": wandb.Html(f.read())})
+   
 
 
 # -------------------------------------------------------
@@ -120,7 +119,8 @@ def main_flow(train_images: str, train_labels: str, val_images: str, val_labels:
     """Flow to train the model and plot UMAP."""
     # Initialize Weights & Biases
     wandb.init(project="cell-counting", entity="maorblumberg-tel-aviv-university", settings=wandb.Settings(start_method="thread"))
-    wandb.config.update({"batch_size": batch_size, "num_epochs": num_epochs, "lr": lr, "weight_decay": weight_decay})
+    wandb.config.update({"batch_size": batch_size, "num_epochs": num_epochs, "lr": lr, "weight_decay": weight_decay, "manual": manual,
+    "smp": smp})
 
     if preprocess:
         train_loader, val_loader = preprocess_task(train_images, train_labels, val_images, val_labels, batch_size)
