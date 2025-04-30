@@ -122,7 +122,7 @@ class QuarterShuffle:
 
 
 class CellCountingDataset(Dataset):
-    def __init__(self, image_paths, label_paths, mode='train', img_transform=None, gt = False, qt = True):
+    def __init__(self, image_paths, label_paths, mode='train', img_transform=None, gt = True, qt = True):
         self.image_paths = image_paths
         self.label_paths = label_paths
         self.mode = mode  # 'train' or 'val'
@@ -152,6 +152,12 @@ class CellCountingDataset(Dataset):
         density_map = transforms.ToTensor()(density_map)
         # --- Apply geometric transforms manually ---
         if self.mode == 'train':
+            if self.gt:
+                color_aug = transforms.Compose([
+                    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+                    transforms.RandomAutocontrast(p = 0.5)
+                ])
+                image = color_aug(image)
             # Random horizontal flip
             if random.random() > 0.5:
                 image = TF.hflip(image)
@@ -160,6 +166,11 @@ class CellCountingDataset(Dataset):
             if random.random() > 0.5:
                 image = TF.vflip(image)
                 density_map = TF.vflip(density_map)
+
+            #angle = random.choice([0, 90, 180, 270])
+            #if angle > 0:
+            #    image = TF.rotate(image, angle)
+            #    density_map = TF.rotate(density_map, angle)
 
             if self.qt:
                 """
@@ -173,8 +184,15 @@ class CellCountingDataset(Dataset):
 
 
         # --- Convert ---
-        image = self.img_transform(image)
-        true_count = density_map.sum()
+        # --- Convert ---
+        if isinstance(image, Image.Image):
+            image = transforms.ToTensor()(image)
+
+        # Normalize (always happens after it's a tensor)
+        image = transforms.Normalize([0.485, 0.456, 0.406],
+                                    [0.229, 0.224, 0.225])(image)
+
+        #true_count = density_map.sum()
         #print(f"[Sample {idx}] Dot count: {int(true_count)}")
 
         return image, transforms.ToTensor()(dot_mask), density_map
@@ -198,26 +216,6 @@ class CellCountingDataset(Dataset):
 
         return density
 
-    def _get_img_transform(self):
-        if self.mode == 'train':
-            ops = []
-            if not self.qt:
-                ops = [transforms.ToTensor()]
-            if self.gt:
-                ops.extend([
-                    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-                    transforms.RandomAutocontrast(),
-                ])
-            ops.append(transforms.Normalize([0.485, 0.456, 0.406],
-                                            [0.229, 0.224, 0.225]))
-            return transforms.Compose(ops)
-        else:
-            return transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406],
-                                     [0.229, 0.224, 0.225])
-            ])
-
 
 
     def get_all_density_maps(self):
@@ -239,11 +237,19 @@ class CellCountingDataset(Dataset):
         """
         Visualize image, raw label (dot mask), and generated density map for one sample.
         """
+        def denormalize(img_tensor):
+            mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+            std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+            return img_tensor * std + mean
+
         image, dot_mask, density_map = self[idx]
 
         # Convert image: [3, H, W] → [H, W, 3] and denormalize
-        image_np = image.permute(1, 2, 0).cpu().numpy()
-        image_np = np.clip(image_np * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406]), 0, 1)    
+        image_np = denormalize(image).permute(1, 2, 0).cpu().numpy()
+        image_np = np.clip(image_np, 0, 1)
+
+        #image_np = image.permute(1, 2, 0).cpu().numpy()
+        #image_np = np.clip(image_np * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406]), 0, 1)    
 
         # Convert dot_mask to NumPy
         dot_mask_np = dot_mask.permute(1, 2, 0).cpu().numpy()
@@ -311,4 +317,4 @@ if __name__ == '__main__':
     torch.save(train_loader, 'data/processed/train_loader.pth')
     torch.save(val_loader, 'data/processed/val_loader.pth')
     # Visualize a sample from the training dataset
-    train_dataset.visualize_sample(1)
+    train_dataset.visualize_sample(i)

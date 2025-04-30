@@ -94,7 +94,7 @@ class UNetCellCounter(nn.Module):
         super().__init__()
 
         # Load ResNet-34 backbone
-        resnet = models.resnet34(pretrained=pretrained)
+        resnet = models.resnet50(pretrained=pretrained)
 
         self.layer0 = nn.Sequential(
             resnet.conv1,  # out: 64
@@ -109,10 +109,14 @@ class UNetCellCounter(nn.Module):
 
         # Decoder
         factor = 2
-        self.up1 = Up(512, 256, 256)  # x1=512, x2=256 → output=256
-        self.up2 = Up(256, 128, 128)  # x1=256, x2=128 → output=128
-        self.up3 = Up(128, 64, 64)    # x1=128, x2=64  → output=64
-        self.up4 = Up(64, 64, 64)     # x1=64,  x2=64  → output=64
+        #self.up1 = Up(512, 256, 256)  # x1=512, x2=256 → output=256
+        #self.up2 = Up(256, 128, 128)  # x1=256, x2=128 → output=128
+        #self.up3 = Up(128, 64, 64)    # x1=128, x2=64  → output=64
+        #self.up4 = Up(64, 64, 64)     # x1=64,  x2=64  → output=64
+        self.up1 = Up(2048, 1024, 512)  # x1=2048 from layer4, x2=1024 from layer3
+        self.up2 = Up(512, 512, 256)    # x1=512 after up1, x2=512 from layer2
+        self.up3 = Up(256, 256, 128)    # x1=256 after up2, x2=256 from layer1
+        self.up4 = Up(128, 64, 64)      # x1=128 after up3, x2=64 from early layers
 
 
         self.outc = OutConv(64, 1)
@@ -160,7 +164,7 @@ class UNetCellCounter(nn.Module):
 
         count = torch.sum(density_map, dim=(1, 2, 3))
         return density_map, count
-    
+
 
 
 class UNetCellCounterEffNet(nn.Module):
@@ -281,24 +285,24 @@ if __name__ == '__main__':
     parser.add_argument('--summary', action='store_true', help='Print model summary')
     parser.add_argument('--epochs', action='store_true', help='Preprocess the data')
     args = parser.parse_args()
-    
+
 
     train_loader = torch.load(args.train_loader, weights_only=False)
     val_loader = torch.load(args.val_loader, weights_only=False)
 
 
 
-    
+
     if args.manual:
         model = UNetCellCounter().to(device)
     elif args.smp:
         model = UNetCellCounterEffNet(backbone="efficientnet-b4", pretrained=True).to(device)
     else:
         raise ValueError("Please specify a model type")
-    
+
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
     criterion = nn.MSELoss()  # L2 loss for density map regression
-    if args.summary:    
+    if args.summary:
         from torchsummary import summary
         summary(model, input_size = (3,256,256))
 

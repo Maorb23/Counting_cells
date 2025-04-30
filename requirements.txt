@@ -8,3 +8,4 @@ matplotlib
 segmentation-models-pytorch
 wandb
 prefect
+optuna

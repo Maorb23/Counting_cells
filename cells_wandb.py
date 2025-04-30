@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
 import torch
 import torch.nn as nn
 import numpy as np
@@ -25,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 @task
 def preprocess_task(train_images: str, train_labels: str, val_images: str, val_labels: str, batch_size: int = 8):
-    
+
 
     logger = prefect.get_run_logger()
     train_image_paths = [os.path.join(train_images, f) for f in os.listdir(train_images) if f.endswith('.png')]
@@ -54,11 +52,11 @@ def train_task2(train_loader,val_loader,
         model = UNetCellCounter().to(device)
     elif smp:
         model = UNetCellCounterEffNet(backbone="efficientnet-b4", pretrained=True).to(device)
-    else: 
+    else:
         raise ValueError("Please specify a model type")
-    
+
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay = weight_decay)
-    if summary:    
+    if summary:
         from torchsummary import summary
         summary(model, input_size = (3,256,256))
 
@@ -88,8 +86,8 @@ def train_task(train_loader, val_loader,
 
     def objective(trial):
         # Suggest hyperparameters
-        lr = trial.suggest_float('lr', 1e-5, 1e-3, log=True)
-        weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
+        lr = trial.suggest_float('lr', 3e-5, 1e-3, log=True)
+        weight_decay = trial.suggest_float('weight_decay', 1e-5, 1e-2, log=True)
 
         logger.info(f"Optuna Trial {trial.number}: lr={lr:.2e}, weight_decay={weight_decay:.2e}")
 
@@ -103,9 +101,6 @@ def train_task(train_loader, val_loader,
 
         optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-        if summary and trial.number == 0:  # Only print summary once
-            from torchsummary import summary
-            summary(model, input_size=(3, 256, 256))
 
         # ---- Train
         train_losses, val_losses, mae_list = train_unet(
@@ -152,9 +147,14 @@ from bokeh.plotting import figure, output_file, save, show
 from bokeh.layouts import column
 
 @task
-def error_analyze(train_losses, val_losses, mae_list, save_path="training_curves.html", idx = 0):
+def error_analyze(train_losses, val_losses, mae_list, save_path = None, idx = 0):
+
+    if save_path is None:
+        save_path = f"training_curves_trial_{idx}.html"
     output_file(save_path)
-    
+    train_losses = train_losses[5:]
+    val_losses = val_losses[5:]
+    mae_list = mae_list[5:]
     x = list(range(1, len(train_losses) + 1))
 
     # Loss plot
@@ -177,7 +177,8 @@ def error_analyze(train_losses, val_losses, mae_list, save_path="training_curves
     show(layout)
 
     # 🧠 Log to Weights & Biases
-   
+    with open(save_path, "r") as f:
+        wandb.log({f"Training Curves {idx} (Bokeh HTML)": wandb.Html(f.read())})
 
 
 # -------------------------------------------------------
@@ -185,8 +186,8 @@ def error_analyze(train_losses, val_losses, mae_list, save_path="training_curves
 # -------------------------------------------------------
 
 @flow(name="Cell training and error analysis")
-def main_flow(train_images: str, train_labels: str, val_images: str, val_labels: str, batch_size: int = 8, 
-              manual = False, smp = False, num_epochs=30, lr = 1e-4, weight_decay = 1e-5, summary = True,
+def main_flow(train_images: str, train_labels: str, val_images: str, val_labels: str, batch_size: int = 8,
+              manual = False, smp = False, num_epochs=30, lr = 1e-4, weight_decay = 1e-5,num_trials = 5, summary = True,
               preprocess = False, train = False, error_analysis = False, eda_plots = False):
     """Flow to train the model and plot UMAP."""
     # Initialize Weights & Biases
@@ -196,17 +197,17 @@ def main_flow(train_images: str, train_labels: str, val_images: str, val_labels:
 
     if preprocess:
         train_loader, val_loader = preprocess_task(train_images, train_labels, val_images, val_labels, batch_size)
-    
+
     #if train:
      #   train_losses, val_losses, mae_list = train_task(train_loader, val_loader, manual, smp, num_epochs, lr, weight_decay, summary)
-    
+
     #if error_analysis:
     #    error_analyze(train_losses, val_losses, mae_list)
     if train:
         study = train_task(
             train_loader, val_loader,
             manual=manual, smp=smp,
-            num_trials=5, num_epochs=15,
+            num_trials=num_trials, num_epochs=num_epochs,
             summary=summary
         )
 
@@ -222,11 +223,10 @@ def main_flow(train_images: str, train_labels: str, val_images: str, val_labels:
                     train_losses=train_losses,
                     val_losses=val_losses,
                     mae_list=mae_list,
-                    save_path=f"training_curves_trial_{idx}.html",
                     idx=idx
                 )
 
-    
+
     wandb.finish()
 
 # -------------------------------------------------------
@@ -243,6 +243,7 @@ if __name__ == "__main__":
     parser.add_argument('--manual', action='store_true', help='Use manual model')
     parser.add_argument('--smp', action='store_true', help='Use SMP model')
     parser.add_argument('--num_epochs', type=int, default=30, help='Number of epochs for training')
+    parser.add_argument('--num_trials', type=int, default=5, help='Number of epochs for training')
     parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate for optimizer')
     parser.add_argument('--weight_decay', type=float, default=1e-5, help='Weight decay for optimizer')
     parser.add_argument('--summary', action='store_true', help='Show model summary')
@@ -261,6 +262,7 @@ if __name__ == "__main__":
         manual=args.manual,
         smp=args.smp,
         num_epochs=args.num_epochs,
+        num_trials = args.num_trials,
         lr=args.lr,
         weight_decay=args.weight_decay,
         summary=args.summary,
@@ -268,4 +270,3 @@ if __name__ == "__main__":
         train=args.train,
         error_analysis=args.error_analysis
     )
-
