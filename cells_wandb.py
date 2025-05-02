@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn as nn
 import numpy as np
@@ -12,8 +13,19 @@ from train_cells import UNetCellCounter, UNetCellCounterEffNet, train_unet, mse_
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import logging
+import random
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+seed = 42
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 
 # -------------------------------------------------------

@@ -20,6 +20,8 @@ import argparse
 import torch.nn.functional as F
 from preprocess_cells import CellCountingDataset
 import torchvision.models as models
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 seed = 42
@@ -196,6 +198,8 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
 
     for epoch in range(num_epochs):
         # Training phase
+        current_lr = optimizer.param_groups[0]['lr']
+        print(f"Learning Rate: {current_lr:.2e}")
         model.train()
         epoch_loss = 0
 
@@ -234,6 +238,8 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
         mae = 0  # Mean Absolute Error for count
 
         with torch.no_grad():
+            
+
             for batch_idx, (inputs, labels, targets) in enumerate(val_loader):
               inputs, labels, targets = inputs.to(device), labels.to(device),targets.to(device)
               density_maps, predicted_counts = model(inputs)
@@ -259,12 +265,14 @@ def train_unet(model, train_loader, val_loader, optimizer, criterion, device, nu
                 plt.colorbar()
                 plt.show()
               """
+              
 
         # Then outside the loop:
         avg_val_loss = val_loss / len(val_loader)
         val_losses.append(avg_val_loss)
         avg_mae = mae / len(val_loader.dataset)
         mae_list.append(avg_mae)
+        scheduler.step(val_loss)
         print(f'Epoch {epoch+1}/{num_epochs}:')
         print(f'Train Loss: {avg_train_loss:.6f}, Val Loss: {avg_val_loss:.6f}, MAE: {avg_mae:.2f}')
 
@@ -301,6 +309,7 @@ if __name__ == '__main__':
         raise ValueError("Please specify a model type")
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
     criterion = nn.MSELoss()  # L2 loss for density map regression
     if args.summary:
         from torchsummary import summary
