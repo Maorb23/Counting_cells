@@ -309,7 +309,10 @@ if __name__ == '__main__':
         raise ValueError("Please specify a model type")
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, verbose=True)
+    from torch.optim.lr_scheduler import CosineAnnealingLR
+
+    scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs, eta_min=1e-6)
+
     criterion = nn.MSELoss()  # L2 loss for density map regression
     if args.summary:
         from torchsummary import summary
